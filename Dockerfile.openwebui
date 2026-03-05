@@ -1,0 +1,25 @@
+FROM ghcr.io/open-webui/open-webui:v0.8.8
+
+# Verify curl is available for health checks (fail build if missing)
+RUN which curl || (echo "ERROR: curl not found in base image" && exit 1)
+
+# Create non-root user for running the application (Debian-style)
+RUN groupadd -g 1000 openwebui && \
+    useradd -u 1000 -g 1000 -m -s /bin/bash openwebui
+
+# Change ownership of entire app directory to non-root user
+RUN chown -R openwebui:openwebui /app
+
+ENV ENABLE_EVALUATION_ARENA_MODELS=false
+# Force environment variables to override database settings (admin UI changes won't persist)
+ENV ENABLE_PERSISTENT_CONFIG=true
+# Bypass model access control so all users (not just admins) can see all models
+ENV BYPASS_MODEL_ACCESS_CONTROL=true
+
+# Switch to non-root user
+USER openwebui
+
+# Health check - verify HTTP server is responding
+# Longer start-period allows time for database migrations on first run
+HEALTHCHECK --interval=30s --timeout=5s --start-period=180s --retries=3 \
+  CMD curl -f http://localhost:8080/ || exit 1

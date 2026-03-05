@@ -1,0 +1,42 @@
+model_list:
+  # Local Ollama Models
+  - model_name: llama3.1:8b
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: http://host.docker.internal:11434
+
+
+# LiteLLM Settings
+litellm_settings:
+  # Drop parameters not supported by the backend
+  drop_params: true
+  # Enable verbose logging for debugging
+  set_verbose: false
+  # Callback configurations
+  success_callback: []
+  failure_callback: []
+  # Cache settings
+  cache: false
+
+# General Settings
+general_settings:
+  # Master key for API authentication
+  master_key: os.environ/LITELLM_MASTER_KEY
+  # Public routes that don't require authentication (for ALB health checks)
+  public_routes: ["/health", "/health/readiness", "/health/liveliness"]
+  # Optional: Database URL for storing logs and analytics
+  # database_url: postgresql://user:password@host:port/dbname
+  database_url: null
+  # Allow cross-origin requests
+  allowed_origins: ["*"]
+  # Enable Swagger UI
+  enable_swagger: true
+
+# Router Settings (optional)
+router_settings:
+  # Enable load balancing across multiple model instances
+  routing_strategy: simple-shuffle
+  # Retry failed requests
+  num_retries: 2
+  # Timeout for model calls (seconds)
+  timeout: 600
